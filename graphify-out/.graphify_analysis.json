@@ -1,0 +1,266 @@
+{
+  "communities": {
+    "0": [
+      "basemodel",
+      "json",
+      "pydantic",
+      "src_llm_prompt_templates",
+      "src_llm_prompt_templates_build_recommendation_prompt",
+      "src_llm_prompt_templates_py_any",
+      "src_llm_prompt_templates_py_dataframe",
+      "src_llm_prompt_templates_rationale_1",
+      "src_llm_prompt_templates_rationale_22",
+      "src_llm_prompt_templates_rationale_65",
+      "src_llm_prompt_templates_serialize_candidates",
+      "src_llm_schemas",
+      "src_llm_schemas_candidaterestaurant",
+      "src_llm_schemas_rationale_1",
+      "src_llm_schemas_rationale_17",
+      "src_llm_schemas_rationale_31",
+      "src_llm_schemas_rationale_42",
+      "src_llm_schemas_rationale_7",
+      "src_llm_schemas_recommendationresponse",
+      "src_llm_schemas_restaurantrecommendation",
+      "src_llm_schemas_userpreferences"
+    ],
+    "1": [
+      "basesettings",
+      "functools",
+      "pathlib",
+      "pydantic_settings",
+      "scripts_verify_phase0",
+      "scripts_verify_phase0_main",
+      "scripts_verify_phase0_rationale_1",
+      "src_config",
+      "src_config_get_settings",
+      "src_config_rationale_37",
+      "src_config_settings",
+      "sys",
+      "tests_test_config",
+      "tests_test_config_test_settings_loaded",
+      "typing"
+    ],
+    "2": [
+      "datasets",
+      "logging",
+      "pandas",
+      "path",
+      "src_data_ingestion_loader",
+      "src_data_ingestion_loader_fetch_raw_dataset",
+      "src_data_ingestion_loader_get_processed_dataset",
+      "src_data_ingestion_loader_py_dataframe",
+      "src_data_ingestion_loader_rationale_1",
+      "src_data_ingestion_loader_rationale_19",
+      "src_data_ingestion_loader_rationale_37",
+      "src_data_ingestion_loader_rationale_55",
+      "src_data_ingestion_loader_run_pipeline"
+    ],
+    "3": [
+      "numpy",
+      "re",
+      "src_data_ingestion_preprocessor",
+      "src_data_ingestion_preprocessor_clean_cost",
+      "src_data_ingestion_preprocessor_rationale_1",
+      "src_data_ingestion_preprocessor_rationale_35",
+      "tests_test_preprocessor_test_clean_cost"
+    ],
+    "4": [
+      "pytest",
+      "src_data_ingestion_preprocessor_clean_boolean",
+      "src_data_ingestion_preprocessor_rationale_84",
+      "tests_test_preprocessor",
+      "tests_test_preprocessor_test_clean_boolean"
+    ],
+    "5": [
+      "src_data_ingestion_preprocessor_clean_cuisines",
+      "src_data_ingestion_preprocessor_py_any",
+      "src_data_ingestion_preprocessor_rationale_58",
+      "tests_test_preprocessor_test_clean_cuisines"
+    ],
+    "6": [
+      "src_data_ingestion_preprocessor_preprocess_dataset",
+      "src_data_ingestion_preprocessor_py_dataframe",
+      "src_data_ingestion_preprocessor_rationale_106",
+      "tests_test_preprocessor_test_preprocess_dataset_synthetic"
+    ],
+    "7": [
+      "src_data_ingestion_preprocessor_clean_location",
+      "src_data_ingestion_preprocessor_rationale_72",
+      "tests_test_preprocessor_test_clean_location"
+    ],
+    "8": [
+      "src_data_ingestion_preprocessor_clean_rating",
+      "src_data_ingestion_preprocessor_rationale_12",
+      "tests_test_preprocessor_test_clean_rating"
+    ],
+    "9": [
+      "src_data_ingestion_preprocessor_clean_votes",
+      "src_data_ingestion_preprocessor_rationale_93",
+      "tests_test_preprocessor_test_clean_votes"
+    ],
+    "10": [
+      "frontend_init",
+      "frontend_init_rationale_1"
+    ],
+    "11": [
+      "src_api_init",
+      "src_api_init_rationale_1"
+    ],
+    "12": [
+      "src_data_ingestion_init",
+      "src_data_ingestion_init_rationale_1"
+    ],
+    "13": [
+      "src_init",
+      "src_init_rationale_1"
+    ],
+    "14": [
+      "src_llm_init",
+      "src_llm_init_rationale_1"
+    ],
+    "15": [
+      "src_retrieval_init",
+      "src_retrieval_init_rationale_1"
+    ],
+    "16": [
+      "src_services_init",
+      "src_services_init_rationale_1"
+    ],
+    "17": [
+      "tests_init"
+    ]
+  },
+  "cohesion": {
+    "0": 0.13333333333333333,
+    "1": 0.20952380952380953,
+    "2": 0.21794871794871795,
+    "3": 0.3333333333333333,
+    "4": 0.5,
+    "5": 0.5,
+    "6": 0.5,
+    "7": 0.6666666666666666,
+    "8": 0.6666666666666666,
+    "9": 0.6666666666666666,
+    "10": 1.0,
+    "11": 1.0,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_data_ingestion_preprocessor_preprocess_dataset",
+      "label": "preprocess_dataset()",
+      "degree": 14
+    },
+    {
+      "id": "src_data_ingestion_preprocessor_clean_rating",
+      "label": "clean_rating()",
+      "degree": 8
+    },
+    {
+      "id": "src_data_ingestion_preprocessor_clean_cost",
+      "label": "clean_cost()",
+      "degree": 8
+    },
+    {
+      "id": "src_data_ingestion_preprocessor_clean_location",
+      "label": "clean_location()",
+      "degree": 8
+    },
+    {
+      "id": "src_data_ingestion_preprocessor_clean_votes",
+      "label": "clean_votes()",
+      "degree": 8
+    },
+    {
+      "id": "src_config_get_settings",
+      "label": "get_settings()",
+      "degree": 7
+    },
+    {
+      "id": "src_data_ingestion_loader_get_processed_dataset",
+      "label": "get_processed_dataset()",
+      "degree": 7
+    },
+    {
+      "id": "src_data_ingestion_preprocessor_clean_cuisines",
+      "label": "clean_cuisines()",
+      "degree": 7
+    },
+    {
+      "id": "src_data_ingestion_preprocessor_clean_boolean",
+      "label": "clean_boolean()",
+      "degree": 7
+    },
+    {
+      "id": "src_llm_prompt_templates_serialize_candidates",
+      "label": "serialize_candidates()",
+      "degree": 6
+    }
+  ],
+  "surprises": [
+    {
+      "source": "main()",
+      "target": "get_settings()",
+      "source_files": [
+        "scripts/verify_phase0.py",
+        "src/config.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `main()` unexpectedly reaches hub `get_settings()`"
+    },
+    {
+      "source": "test_settings_loaded()",
+      "target": "Settings",
+      "source_files": [
+        "tests/test_config.py",
+        "src/config.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "test_clean_rating()",
+      "target": "clean_rating()",
+      "source_files": [
+        "tests/test_preprocessor.py",
+        "src/data_ingestion/preprocessor.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `test_clean_rating()` unexpectedly reaches hub `clean_rating()`"
+    },
+    {
+      "source": "test_clean_cost()",
+      "target": "clean_cost()",
+      "source_files": [
+        "tests/test_preprocessor.py",
+        "src/data_ingestion/preprocessor.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `test_clean_cost()` unexpectedly reaches hub `clean_cost()`"
+    },
+    {
+      "source": "test_clean_cuisines()",
+      "target": "clean_cuisines()",
+      "source_files": [
+        "tests/test_preprocessor.py",
+        "src/data_ingestion/preprocessor.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `test_clean_cuisines()` unexpectedly reaches hub `clean_cuisines()`"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

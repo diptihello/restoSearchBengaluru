@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zomato AI Culinary Concierge</title>
+  <meta name="description" content="AI-Powered Restaurant Recommendation Engine combining sub-10ms dataset filtering with Google Gemini situational reasoning.">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            zomato: {
+              red: '#E23744',
+              crimson: '#FF4757',
+              dark: '#B8232F'
+            },
+            obsidian: {
+              950: '#070A10',
+              900: '#0B0F19',
+              850: '#0F1523',
+              800: '#131C2E',
+              700: '#1E293B',
+              600: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Glassmorphism Classes */
+    .glass-panel {
+      background: rgba(19, 28, 46, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.45);
+    }
+    
+    .glass-card {
+      background: rgba(30, 41, 59, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .glass-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(226, 55, 68, 0.35);
+      box-shadow: 0 16px 36px -10px rgba(226, 55, 68, 0.15), 0 0 20px 0 rgba(226, 55, 68, 0.05);
+    }
+
+    .glass-input {
+      background: rgba(11, 15, 25, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+    .glass-input:focus {
+      border-color: #E23744;
+      box-shadow: 0 0 0 2px rgba(226, 55, 68, 0.2);
+      outline: none;
+    }
+
+    /* Glow utilities */
+    .glow-red {
+      box-shadow: 0 0 25px -4px rgba(226, 55, 68, 0.45);
+    }
+    
+    .glow-violet {
+      box-shadow: 0 0 18px -2px rgba(139, 92, 246, 0.3);
+    }
+
+    .ambient-glow {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 9999px;
+      filter: blur(120px);
+    }
+
+    /* Range slider custom thumb */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #E23744;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 0 10px rgba(226, 55, 68, 0.8);
+      cursor: pointer;
+      margin-top: -6px;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: #1E293B;
+      border-radius: 9999px;
+    }
+
+    /* Shimmer Skeleton */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .animate-shimmer {
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2.2s infinite;
+    }
+  </style>
+</head>
+<body class="bg-[#0B0F19] text-[#F8FAFC] font-sans antialiased min-h-screen relative selection:bg-zomato-red selection:text-white pb-20">
+
+  <!-- Ambient Dynamic Lighting Layer -->
+  <div class="ambient-glow w-[580px] h-[580px] -top-32 -left-32 bg-[#1E1B4B] opacity-25"></div>
+  <div class="ambient-glow w-[640px] h-[640px] top-64 -right-48 bg-[#3B0713] opacity-20"></div>
+  <div class="ambient-glow w-[480px] h-[480px] bottom-10 left-1/3 bg-[#130E26] opacity-30"></div>
+
+  <!-- Main Container -->
+  <div class="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- 1. Header / Top Navigation Bar -->
+    <header class="py-4 border-b border-white/[0.08] flex items-center justify-between gap-4 sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-md">
+      <!-- Left: Logo & Pill -->
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#B8232F] to-[#FF4757] flex items-center justify-center shadow-lg shadow-zomato-red/30 group-hover:scale-105 transition-transform">
+            <span class="font-display font-black text-xl italic text-white tracking-tighter">z</span>
+          </div>
+          <span class="font-display font-extrabold text-2xl tracking-tight text-white">zomato</span>
+        </a>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-zomato-red/20 via-pink-500/20 to-purple-500/20 border border-zomato-red/30 text-[11px] font-mono font-bold tracking-wider text-pink-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-zomato-red animate-pulse"></span>
+          AI CONCIERGE 2.0
+        </div>
+      </div>
+
+      <!-- Center: City Locator & Stats -->
+      <div class="hidden md:flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-obsidian-800/80 border border-white/10 text-sm">
+          <span class="text-zomato-red">📍</span>
+          <span class="font-medium text-slate-200">Bangalore, India</span>
+        </div>
+        <div id="statsBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/20 text-xs font-mono text-emerald-400">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span id="spotsCount">12,126 Curated Spots</span>
+        </div>
+      </div>
+
+      <!-- Right: AI Model Pill & Action -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-950/30 border border-purple-500/30 text-xs font-mono text-purple-300 glow-violet">
+          <span class="text-amber-400">⚡</span>
+          <span id="modelTag">Gemini 3.8 Flash</span>
+          <span class="text-slate-500">•</span>
+          <span class="text-slate-400">Sub-10ms Stage 1</span>
+        </div>
+        <a href="/docs" target="_blank" class="text-xs font-medium text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition">
+          Swagger Docs
+        </a>
+      </div>
+    </header>
+
+    <!-- 2. Hero Section & Persona Quick-Select -->
+    <section class="pt-8 pb-7 border-b border-white/[0.06]">
+      <div class="max-w-4xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zomato-red/10 border border-zomato-red/25 text-xs text-zomato-crimson font-medium mb-3">
+          <span>✨ Two-Stage Neural Re-ranking Engine</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold tracking-tight text-white leading-tight">
+          Where Taste Meets <span class="bg-gradient-to-r from-white via-slate-200 to-zomato-crimson bg-clip-text text-transparent">Intelligence.</span>
+        </h1>
+        <p class="mt-2.5 text-base sm:text-lg text-slate-400 font-normal leading-relaxed max-w-3xl">
+          Hyper-personalized Bangalore dining recommendations combining instant sub-10ms dataset retrieval with Gemini situational reasoning.
+        </p>
+      </div>
+
+      <!-- Quick Persona Chips -->
+      <div class="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
+        <span class="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold mr-1">One-Click Personas:</span>
+        <div class="flex flex-wrap gap-2.5 w-full sm:w-auto">
+          <!-- Persona A -->
+          <button id="personaBtnA" type="button" class="px-3.5 py-2 rounded-xl bg-obsidian-800/80 hover:bg-obsidian-700/80 border border-white/10 hover:border-zomato-red/50 text-xs font-medium text-slate-200 hover:text-white transition-all flex items-center gap-2 shadow-sm group">
+            <span class="text-base group-hover:scale-110 transition-transform">🎓</span>
+            <span><strong>Student Budget</strong></span>
+            <span class="text-slate-500 font-mono">Koramangala • ≤ ₹500</span>
+          </button>
+          <!-- Persona B (Romantic) -->
+          <button id="personaBtnB" type="button" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-zomato-red/15 to-purple-900/20 border border-zomato-red/50 text-xs font-medium text-white transition-all flex items-center gap-2 shadow-sm ring-1 ring-zomato-red/30">
+            <span class="text-base">🍷</span>
+            <span><strong class="text-pink-300">Romantic Dinner</strong></span>
+            <span class="text-slate-400 font-mono">Indiranagar • Italian • Above ₹1,500</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-zomato-crimson"></span>
+          </button>
+          <!-- Persona C -->
+          <button id="personaBtnC" type="button" class="px-3.5 py-2 rounded-xl bg-obsidian-800/80 hover:bg-obsidian-700/80 border border-white/10 hover:border-zomato-red/50 text-xs font-medium text-slate-200 hover:text-white transition-all flex items-center gap-2 shadow-sm group">
+            <span class="text-base group-hover:scale-110 transition-transform">🥞</span>
+            <span><strong>Family Brunch</strong></span>
+            <span class="text-slate-500 font-mono">Bangalore • Buffet • ₹1,000</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Split Layout: Sidebar Controls + Recommendation Feed -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- Left Column: Preference Control Panel (Sticky 340px) -->
+      <aside class="lg:col-span-4 lg:sticky lg:top-24">
+        <form id="preferencesForm" class="glass-panel rounded-2xl p-6 border border-white/10 relative overflow-hidden">
+          <!-- Subtle corner accent -->
+          <div class="absolute -top-12 -right-12 w-24 h-24 bg-zomato-red/20 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-white/[0.08]">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-zomato-crimson" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+              <h2 class="font-display font-bold text-lg text-white">Preference Controls</h2>
+            </div>
+            <button id="resetBtn" type="button" class="text-[11px] font-mono text-slate-400 hover:text-zomato-crimson transition">Reset All</button>
+          </div>
+
+          <!-- Form Fields -->
+          <div class="space-y-5">
+            <!-- Locality Select -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span>Locality / Hub</span>
+                <span id="selectedLocalityLabel" class="text-[10px] text-slate-500 font-mono">Selected: Indiranagar</span>
+              </label>
+              <div class="relative">
+                <select id="locationInput" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-sm text-slate-200 appearance-none cursor-pointer focus:border-zomato-red">
+                  <option value="Indiranagar" selected>Indiranagar</option>
+                  <option value="Koramangala">Koramangala</option>
+                  <option value="Whitefield">Whitefield</option>
+                  <option value="HSR">HSR Layout</option>
+                  <option value="BTM">BTM Layout</option>
+                  <option value="Jayanagar">Jayanagar</option>
+                  <option value="Electronic City">Electronic City</option>
+                  <option value="Church Street">Church Street</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Budget Tier Buttons -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Budget Tier (For Two)
+              </label>
+              <div class="grid grid-cols-2 gap-1.5 p-1 bg-obsidian-900/90 rounded-xl border border-white/[0.08]" id="budgetButtonGroup">
+                <button type="button" data-budget="Low" class="budget-btn py-2 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition">
+                  Low (≤₹500)
+                </button>
+                <button type="button" data-budget="Medium" class="budget-btn py-2 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition">
+                  Mid (₹500-₹1.5k)
+                </button>
+                <button type="button" data-budget="High" class="budget-btn active py-2 px-2.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-zomato-red to-zomato-crimson shadow-md shadow-zomato-red/30">
+                  High (&gt;₹1,500)
+                </button>
+                <button type="button" data-budget="Any" class="budget-btn py-2 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition">
+                  Any Budget
+                </button>
+              </div>
+            </div>
+
+            <!-- Minimum Rating Slider -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Min Rating
+                </label>
+                <span id="ratingDisplayBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-bold font-mono">
+                  <span>★</span> <span id="ratingValueText">4.2</span>+
+                </span>
+              </div>
+              <input id="ratingSlider" type="range" min="3.0" max="4.8" step="0.1" value="4.2" class="w-full">
+              <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                <span>3.0★ Casual</span>
+                <span>4.0★ Great</span>
+                <span>4.8★ Elite</span>
+              </div>
+            </div>
+
+            <!-- Cuisine Multiselect Tags -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Cuisine Preferences
+              </label>
+              <div id="cuisineTagsContainer" class="flex flex-wrap gap-1.5">
+                <!-- Dynamically populated or defaults -->
+                <span data-cuisine="Italian" class="cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zomato-red/20 border border-zomato-red/50 text-xs font-medium text-white transition">
+                  Italian
+                </span>
+                <span data-cuisine="Continental" class="cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zomato-red/20 border border-zomato-red/50 text-xs font-medium text-white transition">
+                  Continental
+                </span>
+                <span data-cuisine="Chinese" class="cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian-900 border border-white/10 text-xs font-medium text-slate-400 hover:border-white/30 transition">
+                  + Chinese
+                </span>
+                <span data-cuisine="North Indian" class="cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian-900 border border-white/10 text-xs font-medium text-slate-400 hover:border-white/30 transition">
+                  + North Indian
+                </span>
+                <span data-cuisine="Asian" class="cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian-900 border border-white/10 text-xs font-medium text-slate-400 hover:border-white/30 transition">
+                  + Asian
+                </span>
+                <span data-cuisine="South Indian" class="cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian-900 border border-white/10 text-xs font-medium text-slate-400 hover:border-white/30 transition">
+                  + South Indian
+                </span>
+              </div>
+            </div>
+
+            <!-- Occasion & Vibe Input Box -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span>Occasion & Vibe Prompt</span>
+                <span class="text-[10px] text-purple-400 font-mono">Gemini Reasoned</span>
+              </label>
+              <textarea id="occasionInput" rows="3" class="w-full glass-input rounded-xl p-3 text-xs sm:text-sm text-slate-100 placeholder-slate-500 resize-none" placeholder="e.g., Cozy candlelit anniversary dinner with authentic handmade pasta and quiet ambiance">Intimate 2nd anniversary celebration. Quiet corner table, curated wine list, artisanal pasta or sourdough pizza, and romantic candlelit ambiance with jazz music.</textarea>
+            </div>
+
+            <!-- CTA Button -->
+            <button id="submitBtn" type="submit" class="w-full py-3.5 px-4 rounded-xl font-display font-semibold text-sm text-white bg-gradient-to-r from-zomato-red via-zomato-crimson to-pink-600 hover:brightness-110 active:scale-[0.98] transition-all glow-red flex items-center justify-center gap-2">
+              <svg id="submitIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+              <span id="submitText">Discover Tailored Spots</span>
+            </button>
+            <div class="text-center">
+              <span class="text-[11px] font-mono text-slate-500">Stage 1: In-Memory Parquet • Stage 2: Gemini 3.8</span>
+            </div>
+          </div>
+        </form>
+      </aside>
+
+      <!-- Right Column: Recommendation Stream -->
+      <main class="lg:col-span-8 space-y-6" id="resultsMainContainer">
+
+        <!-- Skeleton Loading Preview (Initially Hidden) -->
+        <div id="loadingSkeleton" class="hidden rounded-2xl p-6 border border-white/[0.08] bg-obsidian-900/60 glass-panel">
+          <div class="flex items-center justify-between mb-4 text-xs font-mono text-purple-300">
+            <span class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-400 animate-ping"></span>
+              <span>Gemini 3.8 Flash evaluating filtered candidates against your vibe...</span>
+            </span>
+            <span class="text-slate-400">Streaming results...</span>
+          </div>
+          <div class="space-y-4">
+            <div class="h-6 w-1/3 rounded-lg animate-shimmer"></div>
+            <div class="h-20 w-full rounded-xl animate-shimmer"></div>
+            <div class="h-32 w-full rounded-xl animate-shimmer"></div>
+          </div>
+        </div>
+
+        <!-- A. Concierge Executive Summary Card -->
+        <div id="executiveSummaryCard" class="glass-panel rounded-2xl p-6 sm:p-7 border border-white/10 relative overflow-hidden" style="border-left: 4px solid #E23744;">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-zomato-red/20 border border-zomato-red/40 flex items-center justify-center text-zomato-crimson text-sm">
+                🎯
+              </div>
+              <h2 class="font-display font-bold text-lg text-white tracking-tight">Concierge Executive Summary</h2>
+            </div>
+            <div id="summaryBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-900/40 border border-purple-500/40 text-xs font-mono font-medium text-purple-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping"></span>
+              <span id="summaryBadgeText">✨ GEMINI AI CURATED</span>
+            </div>
+          </div>
+
+          <p id="summaryParagraph" class="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+            For an intimate anniversary in Indiranagar, we prioritized low ambient decibel levels, authentic European wine pairings, and artisanal handmade pasta. <strong class="text-white">Chianti Italian Ristorante</strong> captures our top recommendation for its secluded rooftop greenhouse seating and legendary hand-rolled truffle ravioli. If you lean toward craft sourdough and woodfired warmth, <strong class="text-white">Toit Brewpub</strong> offers an electrifying alternative with reserved mezzanine booths, while <strong class="text-white">Milano Heritage Osteria</strong> guarantees absolute acoustic privacy for slow conversations.
+          </p>
+
+          <div class="mt-5 pt-4 border-t border-white/[0.08] flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400">
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-400">✓</span> <span>Stage 1 Vector Match: <strong id="retrievalMatchText">98.4%</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-purple-400">🧠</span> <span>Gemini Reasoning: <strong id="groundingStatusText">Grounded & Verified</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-amber-400">⏱️</span> <span>Pipeline Latency: <strong id="latencyText">4.2ms + 820ms</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- B. Ranked Restaurant Cards (Container) -->
+        <div id="cardsContainer" class="space-y-5">
+          <!-- Dynamically injected restaurant cards -->
+        </div>
+
+        <!-- C. Empty State Helper (Hidden by default) -->
+        <div id="emptyStateCard" class="hidden rounded-2xl p-6 border-2 border-dashed border-purple-500/30 bg-purple-950/10 text-center relative overflow-hidden">
+          <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-purple-300 text-xl shadow-lg shadow-purple-900/20">
+            🔍
+          </div>
+          <h4 class="font-display font-bold text-base text-white">No exact dining spots matched this filter combination</h4>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-lg mx-auto">
+            Try adjusting your budget tier to <em>"Any"</em> or lowering your rating threshold to <em>3.5★</em> to see dozens of popular neighborhood favorites.
+          </p>
+          <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <button type="button" id="relaxBudgetBtn" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 border border-white/10 text-xs font-medium text-slate-300 hover:text-white transition">
+              ⚡ Expand Budget to 'Any'
+            </button>
+            <button type="button" id="relaxRatingBtn" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 border border-white/10 text-xs font-medium text-slate-300 hover:text-white transition">
+              ⚡ Set Rating to 3.5★
+            </button>
+            <button type="button" id="relaxCuisineBtn" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 border border-white/10 text-xs font-medium text-slate-300 hover:text-white transition">
+              ⚡ Clear Cuisine Filter
+            </button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- 4. Footer System Bar -->
+    <footer class="mt-16 pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-mono">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>Bangalore Dining Intelligence Cluster • 12,126 Cleaned Venues In-Memory</span>
+      </div>
+      <div>
+        <span>Powered by FastAPI &amp; Google Gemini 3.8 Flash</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Interactive Client-side Script -->
+  <script>
+    const API_BASE = window.location.origin;
+
+    // State
+    const state = {
+      location: 'Indiranagar',
+      budget: 'High',
+      minRating: 4.2,
+      cuisines: ['Italian', 'Continental'],
+      occasion: 'Intimate 2nd anniversary celebration. Quiet corner table, curated wine list, artisanal pasta or sourdough pizza, and romantic candlelit ambiance with jazz music.',
+    };
+
+    // DOM Elements
+    const locationInput = document.getElementById('locationInput');
+    const selectedLocalityLabel = document.getElementById('selectedLocalityLabel');
+    const ratingSlider = document.getElementById('ratingSlider');
+    const ratingValueText = document.getElementById('ratingValueText');
+    const occasionInput = document.getElementById('occasionInput');
+    const cuisineTagsContainer = document.getElementById('cuisineTagsContainer');
+    const preferencesForm = document.getElementById('preferencesForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const loadingSkeleton = document.getElementById('loadingSkeleton');
+    const executiveSummaryCard = document.getElementById('executiveSummaryCard');
+    const summaryParagraph = document.getElementById('summaryParagraph');
+    const summaryBadgeText = document.getElementById('summaryBadgeText');
+    const latencyText = document.getElementById('latencyText');
+    const cardsContainer = document.getElementById('cardsContainer');
+    const emptyStateCard = document.getElementById('emptyStateCard');
+    const spotsCount = document.getElementById('spotsCount');
+    const modelTag = document.getElementById('modelTag');
+
+    // 1. Initialize Metadata & Health
+    async function initMetadata() {
+      try {
+        const healthRes = await fetch(`${API_BASE}/health`);
+        if (healthRes.ok) {
+          const healthData = await healthRes.json();
+          if (healthData.total_restaurants) {
+            spotsCount.textContent = `${healthData.total_restaurants.toLocaleString()} Curated Spots`;
+          }
+          if (healthData.gemini_model) {
+            modelTag.textContent = `${healthData.gemini_model}`;
+          }
+        }
+
+        const metaRes = await fetch(`${API_BASE}/api/v1/meta/options`);
+        if (metaRes.ok) {
+          const meta = await metaRes.json();
+          if (meta.locations && meta.locations.length) {
+            locationInput.innerHTML = meta.locations.map(loc => 
+              `<option value="${loc}" ${loc === state.location ? 'selected' : ''}>${loc}</option>`
+            ).join('');
+          }
+        }
+      } catch (err) {
+        console.warn('API meta check deferred:', err);
+      }
+    }
+
+    // 2. Budget Tier Buttons
+    const budgetBtns = document.querySelectorAll('.budget-btn');
+    budgetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        budgetBtns.forEach(b => {
+          b.className = 'budget-btn py-2 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition';
+        });
+        btn.className = 'budget-btn active py-2 px-2.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-zomato-red to-zomato-crimson shadow-md shadow-zomato-red/30';
+        state.budget = btn.getAttribute('data-budget');
+      });
+    });
+
+    // 3. Rating Slider
+    ratingSlider.addEventListener('input', (e) => {
+      state.minRating = parseFloat(e.target.value);
+      ratingValueText.textContent = state.minRating.toFixed(1);
+    });
+
+    // 4. Locality Selection
+    locationInput.addEventListener('change', (e) => {
+      state.location = e.target.value;
+      selectedLocalityLabel.textContent = `Selected: ${state.location}`;
+    });
+
+    // 5. Cuisine Tag Click Handler
+    cuisineTagsContainer.addEventListener('click', (e) => {
+      const chip = e.target.closest('.cuisine-chip');
+      if (!chip) return;
+      const cuisineName = chip.getAttribute('data-cuisine');
+      const idx = state.cuisines.indexOf(cuisineName);
+
+      if (idx > -1) {
+        state.cuisines.splice(idx, 1);
+        chip.className = 'cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian-900 border border-white/10 text-xs font-medium text-slate-400 hover:border-white/30 transition';
+        chip.textContent = `+ ${cuisineName}`;
+      } else {
+        state.cuisines.push(cuisineName);
+        chip.className = 'cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zomato-red/20 border border-zomato-red/50 text-xs font-medium text-white transition';
+        chip.textContent = cuisineName;
+      }
+    });
+
+    // 6. Occasion input
+    occasionInput.addEventListener('input', (e) => {
+      state.occasion = e.target.value;
+    });
+
+    // 7. Personas
+    document.getElementById('personaBtnA').addEventListener('click', () => {
+      setPersona('Koramangala', 'Low', 3.5, ['Chinese', 'Fast Food'], 'Casual budget-friendly hangout with friends offering fast service and great appetizers.');
+    });
+    document.getElementById('personaBtnB').addEventListener('click', () => {
+      setPersona('Indiranagar', 'High', 4.2, ['Italian', 'Continental'], 'Intimate 2nd anniversary celebration. Quiet corner table, curated wine list, artisanal pasta or sourdough pizza, and romantic candlelit ambiance with jazz music.');
+    });
+    document.getElementById('personaBtnC').addEventListener('click', () => {
+      setPersona('Bangalore', 'Medium', 3.8, ['Buffet', 'North Indian'], 'Sunday family brunch with kids and grandparents. Variety buffet with vegetarian and non-vegetarian options and comfortable seating.');
+    });
+
+    function setPersona(loc, bud, rat, cuis, occ) {
+      state.location = loc;
+      locationInput.value = loc;
+      selectedLocalityLabel.textContent = `Selected: ${loc}`;
+
+      state.budget = bud;
+      budgetBtns.forEach(b => {
+        if (b.getAttribute('data-budget') === bud) {
+          b.className = 'budget-btn active py-2 px-2.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-zomato-red to-zomato-crimson shadow-md shadow-zomato-red/30';
+        } else {
+          b.className = 'budget-btn py-2 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition';
+        }
+      });
+
+      state.minRating = rat;
+      ratingSlider.value = rat;
+      ratingValueText.textContent = rat.toFixed(1);
+
+      state.cuisines = cuis;
+      document.querySelectorAll('.cuisine-chip').forEach(chip => {
+        const cName = chip.getAttribute('data-cuisine');
+        if (cuis.includes(cName)) {
+          chip.className = 'cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zomato-red/20 border border-zomato-red/50 text-xs font-medium text-white transition';
+          chip.textContent = cName;
+        } else {
+          chip.className = 'cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian-900 border border-white/10 text-xs font-medium text-slate-400 hover:border-white/30 transition';
+          chip.textContent = `+ ${cName}`;
+        }
+      });
+
+      state.occasion = occ;
+      occasionInput.value = occ;
+
+      fetchRecommendations();
+    }
+
+    // 8. Fetch Recommendations Call
+    async function fetchRecommendations() {
+      const startTime = performance.now();
+      submitBtn.disabled = true;
+      submitText.textContent = 'Gemini Consulting...';
+      loadingSkeleton.classList.remove('hidden');
+      emptyStateCard.classList.add('hidden');
+
+      const payload = {
+        location: state.location,
+        budget_tier: state.budget,
+        min_rating: state.minRating,
+        cuisines: state.cuisines,
+        occasion: state.occasion.trim() || undefined,
+        candidate_limit: 10
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/recommendations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const elapsed = (performance.now() - startTime).toFixed(0);
+        loadingSkeleton.classList.add('hidden');
+        submitBtn.disabled = false;
+        submitText.textContent = 'Discover Tailored Spots';
+
+        if (!res.ok) {
+          throw new Error(`API error (${res.status})`);
+        }
+
+        const data = await res.json();
+        renderResults(data, elapsed);
+
+      } catch (err) {
+        console.error(err);
+        loadingSkeleton.classList.add('hidden');
+        submitBtn.disabled = false;
+        submitText.textContent = 'Discover Tailored Spots';
+        alert('Could not retrieve recommendations. Please verify the backend is running.');
+      }
+    }
+
+    // 9. Render Results Function
+    function renderResults(data, clientElapsedMs) {
+      if (!data.recommendations || data.recommendations.length === 0) {
+        executiveSummaryCard.classList.add('hidden');
+        cardsContainer.innerHTML = '';
+        emptyStateCard.classList.remove('hidden');
+        return;
+      }
+
+      emptyStateCard.classList.add('hidden');
+      executiveSummaryCard.classList.remove('hidden');
+
+      // Update Summary
+      summaryParagraph.textContent = data.executive_summary;
+      summaryBadgeText.textContent = data.is_fallback ? '⚡ HEURISTIC FALLBACK' : '✨ GEMINI AI CURATED';
+      latencyText.textContent = `${clientElapsedMs}ms total`;
+
+      // Render Cards
+      cardsContainer.innerHTML = data.recommendations.map(rec => {
+        let rankBadgeClass = 'border-l-4 border-l-slate-400';
+        let medal = '⭐';
+        let rankText = `#${rec.rank}`;
+
+        if (rec.rank === 1) {
+          rankBadgeClass = 'border-l-4 border-l-amber-400';
+          medal = '🥇';
+          rankText = '#1 TOP MATCH';
+        } else if (rec.rank === 2) {
+          rankBadgeClass = 'border-l-4 border-l-slate-300';
+          medal = '🥈';
+          rankText = '#2 GREAT MATCH';
+        } else if (rec.rank === 3) {
+          rankBadgeClass = 'border-l-4 border-l-amber-700';
+          medal = '🥉';
+          rankText = '#3 LIVELY ALTERNATIVE';
+        }
+
+        const highlightTagsHtml = (rec.highlights || []).slice(0, 4).map(hl => 
+          `<span class="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-medium text-slate-200">✨ ${hl}</span>`
+        ).join('');
+
+        return `
+          <div class="glass-card rounded-2xl p-6 relative overflow-hidden ${rankBadgeClass}">
+            <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+              <div class="flex items-center gap-3">
+                <div class="px-3 py-1.5 rounded-xl bg-obsidian-900/80 border border-white/10 text-amber-300 font-display font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                  <span class="text-base">${medal}</span>
+                  <span>${rankText}</span>
+                </div>
+                <div>
+                  <h3 class="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">${rec.restaurant_name}</h3>
+                  <div class="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                    <span class="text-zomato-red">📍</span>
+                    <span>${rec.location}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rating Badge -->
+              <div class="flex flex-col items-end">
+                <div class="px-3 py-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-display font-bold text-base flex items-center gap-1">
+                  <span>★</span>
+                  <span>${Number(rec.rating).toFixed(1)}</span>
+                </div>
+                <span class="text-[10px] font-mono text-slate-400 mt-1">Verified Ratings</span>
+              </div>
+            </div>
+
+            <!-- Key Meta Row -->
+            <div class="flex flex-wrap items-center gap-2 py-2 px-3 rounded-xl bg-obsidian-900/60 border border-white/[0.05] text-xs text-slate-300 mb-4">
+              <span class="font-medium text-white">🍲 ${rec.cuisine}</span>
+              <span class="text-slate-600">•</span>
+              <span class="text-amber-300 font-medium">💰 ₹${rec.cost_for_two.toLocaleString()} for two</span>
+              <span class="text-slate-600">•</span>
+              <span class="text-purple-300">🕯️ Tailored Match</span>
+            </div>
+
+            <!-- "Why We Recommend This" Box -->
+            <div class="rounded-xl p-4 bg-amber-500/[0.07] border border-amber-500/20 mb-4 text-xs sm:text-sm text-amber-100/90 leading-relaxed">
+              <div class="flex items-center gap-2 font-display font-semibold text-amber-300 mb-1.5 text-xs uppercase tracking-wider">
+                <span>💡</span> Why Gemini Picked This
+              </div>
+              "${rec.why_recommended}"
+            </div>
+
+            <!-- Highlights Tags -->
+            <div class="flex flex-wrap items-center gap-2 mb-5">
+              ${highlightTagsHtml}
+            </div>
+
+            <!-- Card Action Footer -->
+            <div class="flex items-center justify-between pt-4 border-t border-white/[0.07]">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span class="text-xs text-slate-400 font-mono">Verified Match</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <a href="https://www.google.com/search?q=${encodeURIComponent(rec.restaurant_name + ' ' + rec.location + ' Bangalore Zomato')}" target="_blank" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-obsidian-800 hover:bg-obsidian-700 border border-white/10 transition flex items-center gap-1.5">
+                  <span>View Details</span>
+                </a>
+                <button type="button" onclick="alert('Table booking reservation requested for ${rec.restaurant_name}!')" class="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-zomato-red to-zomato-crimson hover:brightness-110 active:scale-95 transition shadow-md shadow-zomato-red/25 flex items-center gap-1.5">
+                  <span>Book a Table</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 10. Form submission listener
+    preferencesForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      fetchRecommendations();
+    });
+
+    // 11. Relax constraints buttons
+    document.getElementById('relaxBudgetBtn').addEventListener('click', () => {
+      document.querySelector('[data-budget="Any"]').click();
+      fetchRecommendations();
+    });
+    document.getElementById('relaxRatingBtn').addEventListener('click', () => {
+      ratingSlider.value = 3.5;
+      ratingSlider.dispatchEvent(new Event('input'));
+      fetchRecommendations();
+    });
+    document.getElementById('relaxCuisineBtn').addEventListener('click', () => {
+      state.cuisines = [];
+      document.querySelectorAll('.cuisine-chip').forEach(chip => {
+        const cName = chip.getAttribute('data-cuisine');
+        chip.className = 'cuisine-chip cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian-900 border border-white/10 text-xs font-medium text-slate-400 hover:border-white/30 transition';
+        chip.textContent = `+ ${cName}`;
+      });
+      fetchRecommendations();
+    });
+
+    // Run on load
+    initMetadata().then(() => fetchRecommendations());
+  </script>
+</body>
+</html>
