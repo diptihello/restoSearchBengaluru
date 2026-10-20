@@ -119,6 +119,41 @@ Also verify the interactive documentation: `https://<your-railway-domain>/docs`.
 
 ---
 
+## 🌐 Phase 2B: Alternative Backend Deployment to Render (Free Tier)
+
+Render is a popular cloud host that offers a **Free Web Service** tier that fully supports Python 3.12, FastAPI, and in-memory Parquet querying.
+
+### Option 1: 1-Click Blueprint Deployment (Recommended)
+1. Sign in to [Render.com](https://render.com/) with GitHub.
+2. Click **"New +"** → **"Blueprint"**.
+3. Connect your `restoSearchBengaluru` repository.
+4. Render automatically detects [`render.yaml`](file:///d:/Dipti/NextLeap_Zomato_project/render.yaml) and configures the build, health check, and environment.
+5. In the secret prompt, enter your `GEMINI_API_KEY`.
+6. Click **"Apply"**.
+
+### Option 2: Manual Web Service Setup on Render
+1. In Render, click **"New +"** → **"Web Service"**.
+2. Connect `restoSearchBengaluru`.
+3. Set the following settings:
+   - **Language**: `Python`
+   - **Branch**: `main`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn src.api.main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type**: `Free`
+4. Under **Advanced / Environment Variables**, add:
+   - `PYTHON_VERSION`: `3.12.4`
+   - `GEMINI_API_KEY`: *(Your Google AI Studio API Key)*
+   - `GEMINI_MODEL`: `gemini-3.8-flash`
+   - `MAX_CANDIDATES_FOR_LLM`: `5`
+   - `APP_ENV`: `production`
+5. Click **"Deploy Web Service"**.
+6. Copy your public Render URL (e.g., `https://zomato-ai-backend.onrender.com`).
+
+> [!NOTE]
+> Render's Free tier services spin down after 15 minutes of inactivity. When a new search is made after dormancy, the first request may take 30–50 seconds to warm up. Subsequent searches run at normal sub-second speeds.
+
+---
+
 ## ⚡ Phase 3: Deploying Frontend to Vercel
 
 ### Approach A: Deploying the Modern Web Client (`stitch_zomato_ai_culinary_concierge`) [Recommended for Vercel]
