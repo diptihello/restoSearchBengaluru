@@ -1,9 +1,4 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "outputDirectory": "stitch_zomato_ai_culinary_concierge",
+  "cleanUrls": true
 }
