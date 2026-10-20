@@ -1,10 +1,13 @@
 {
-  "version": 2,
   "cleanUrls": true,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/stitch_zomato_ai_culinary_concierge/code.html"
+      "source": "/stitch_zomato_ai_culinary_concierge/(.*)",
+      "destination": "/stitch_zomato_ai_culinary_concierge/$1"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }
