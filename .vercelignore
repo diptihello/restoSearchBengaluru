@@ -1,0 +1,10 @@
+# Tell Vercel to only upload and deploy the static frontend, ignoring backend python files
+requirements.txt
+pyproject.toml
+src/
+data/
+tests/
+scripts/
+venv/
+.pytest_cache/
+graphify-out/
