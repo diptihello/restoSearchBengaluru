@@ -1,5 +1,11 @@
 {
   "framework": null,
   "outputDirectory": "stitch_zomato_ai_culinary_concierge",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://restosearchbengaluru.onrender.com/api/:path*"
+    }
+  ]
 }

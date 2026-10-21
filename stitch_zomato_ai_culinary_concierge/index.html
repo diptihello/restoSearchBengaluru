@@ -697,7 +697,7 @@
         if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
           return "http://localhost:8000";
         }
-        return ""; // Relative path or set via Configure API URL button
+        return "https://restosearchbengaluru.onrender.com";
       }
 
       let API_BASE_URL = getApiBaseUrl();
@@ -730,7 +730,7 @@
       if (configBackendBtn) {
         configBackendBtn.addEventListener("click", () => {
           const current = API_BASE_URL || "(empty / relative)";
-          const input = prompt("Enter your Railway FastAPI Backend URL:\n(e.g., https://your-backend.up.railway.app)", API_BASE_URL);
+          const input = prompt("Enter your Render FastAPI Backend URL:\n(e.g., https://your-backend.onrender.com)", API_BASE_URL);
           if (input !== null) {
             localStorage.setItem("ZOMATO_API_URL", input.trim());
             API_BASE_URL = input.trim().replace(/\/+$/, "");
@@ -902,7 +902,11 @@
         } catch (err) {
           console.error("Search failed:", err);
           if (summaryText) {
-            summaryText.innerHTML = `<span class="text-rose-400 font-semibold">Connection Notice:</span> Could not reach the recommendation API at <code>${API_BASE_URL || "(local)"}</code>. ${err.message}. Check your Railway deployment URL or run the backend locally.`;
+            summaryText.innerHTML = `<span class="text-rose-400 font-semibold">Connection Notice:</span> Could not reach the recommendation API at <code>${API_BASE_URL || "(local)"}</code>. ${err.message}. Click <button id="err-config-btn" class="underline text-amber-300 font-semibold cursor-pointer">Configure API URL</button> to enter your Render backend URL (e.g. <code>https://your-service.onrender.com</code>).`;
+            const errBtn = document.getElementById("err-config-btn");
+            if (errBtn && configBackendBtn) {
+              errBtn.addEventListener("click", () => configBackendBtn.click());
+            }
           }
           if (resultsContainer) resultsContainer.style.display = "block";
         } finally {
