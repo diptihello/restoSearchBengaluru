@@ -1,4 +1,4 @@
-"""Sidebar control panel component for Streamlit frontend."""
+"""Sidebar control panel component for Streamlit frontend with Tomato branding."""
 
 from typing import Any, Dict, Optional, Tuple
 import streamlit as st
@@ -15,21 +15,26 @@ def render_sidebar_controls(meta_options: Dict[str, Any]) -> Tuple[Optional[Dict
         # Branding Header
         st.markdown(
             """
-            <div style="text-align: center; padding: 10px 0 20px 0;">
+            <div style="text-align: center; padding: 12px 0 20px 0;">
                 <div style="
-                    display: inline-block;
-                    background: linear-gradient(135deg, #E23744 0%, #CB202D 100%);
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: linear-gradient(135deg, #FF4343 0%, #E23744 100%);
                     color: white;
-                    font-size: 1.5rem;
+                    font-size: 1.55rem;
                     font-weight: 900;
                     letter-spacing: -0.5px;
-                    padding: 8px 18px;
-                    border-radius: 12px;
+                    padding: 8px 22px;
+                    border-radius: 14px;
                     margin-bottom: 8px;
-                    box-shadow: 0 4px 12px rgba(226, 55, 68, 0.3);
-                ">zomato <span style="font-weight: 300; font-size: 1.2rem;">AI</span></div>
-                <div style="font-size: 0.85rem; color: #64748B; font-weight: 500;">
-                    Culinary Reasoning Concierge
+                    box-shadow: 0 8px 20px rgba(226, 55, 68, 0.25);
+                ">
+                    <span style="font-size: 1.5rem;">🍅</span>
+                    <span>tomato <span style="font-weight: 300; font-size: 1.25rem; opacity: 0.95;">AI</span></span>
+                </div>
+                <div style="font-size: 0.82rem; color: #64748B; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;">
+                    Bangalore Culinary Concierge
                 </div>
             </div>
             """,
@@ -149,6 +154,7 @@ def render_sidebar_controls(meta_options: Dict[str, Any]) -> Tuple[Optional[Dict
         # Dataset / System Status Footer
         total_restaurants = meta_options.get("total_restaurants", 12126)
         st.caption(f"📊 Indexed Database: **{total_restaurants:,}** Bangalore restaurants")
+        st.caption("🍅 Powered by Tomato AI Concierge")
 
     if submitted:
         payload = {
