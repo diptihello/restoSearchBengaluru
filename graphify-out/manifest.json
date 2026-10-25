@@ -24,10 +24,10 @@
     "semantic_hash": ""
   },
   "src/config.py": {
-    "mtime": 1792322649.1078837,
-    "seen": 1792326335.6982405,
-    "ast_hash": "c9ddff64a00961fc8a83ba0b99e3293b",
-    "semantic_hash": "c9ddff64a00961fc8a83ba0b99e3293b"
+    "mtime": 1792522041.581354,
+    "seen": 1792923033.5231886,
+    "ast_hash": "5bf7bd0aef5afb058b9f2b69261c1510",
+    "semantic_hash": ""
   },
   "src/data_ingestion/__init__.py": {
     "mtime": 1792322654.976706,
@@ -96,9 +96,9 @@
     "semantic_hash": "2649e59fb49ab00b65af5e262cbd410e"
   },
   "src/llm/client.py": {
-    "mtime": 1792326774.2980285,
-    "seen": 1792326859.0994155,
-    "ast_hash": "3710e9cd5642ba966227486611687324",
+    "mtime": 1792339364.9890406,
+    "seen": 1792923033.5231886,
+    "ast_hash": "4cd2beff34d791a339e31f4e14d68557",
     "semantic_hash": ""
   },
   "tests/test_llm.py": {
@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "docs/implementation-plan.md": {
-    "mtime": 1792332127.4261804,
-    "seen": 1792333077.049685,
-    "ast_hash": "68433a93ec1caea8d30ca44f00949602",
+    "mtime": 1792333090.9750366,
+    "seen": 1792923033.5231886,
+    "ast_hash": "eeafbaf49220b4570b96d34a97f6e00a",
     "semantic_hash": ""
   },
   "docs/problemStatement.md": {
@@ -174,9 +174,9 @@
     "semantic_hash": ""
   },
   "src/api/main.py": {
-    "mtime": 1792331673.072595,
-    "seen": 1792331727.5021007,
-    "ast_hash": "248022607ac6e7a669e6278384f2a81a",
+    "mtime": 1792338869.3325808,
+    "seen": 1792923033.5231886,
+    "ast_hash": "19c53fa6d5341a9f5210dd7476c48465",
     "semantic_hash": ""
   },
   "src/api/routes.py": {
@@ -198,9 +198,9 @@
     "semantic_hash": ""
   },
   "frontend/app.py": {
-    "mtime": 1792332010.3409493,
-    "seen": 1792332086.870742,
-    "ast_hash": "e1d5fb9cbabf135cf2dcc1304ae6e681",
+    "mtime": 1792601315.3458266,
+    "seen": 1792923033.5231886,
+    "ast_hash": "a6a076e01b2c3c2f826338cda401ce2d",
     "semantic_hash": ""
   },
   "frontend/components/__init__.py": {
@@ -210,21 +210,21 @@
     "semantic_hash": ""
   },
   "frontend/components/api_client.py": {
-    "mtime": 1792331940.7104075,
-    "seen": 1792332086.870742,
-    "ast_hash": "3a65855973f6d8937287132e42917a05",
+    "mtime": 1792522065.4029765,
+    "seen": 1792923033.5231886,
+    "ast_hash": "f623c00c9b2acf8779d2ec21407d1dfc",
     "semantic_hash": ""
   },
   "frontend/components/cards.py": {
-    "mtime": 1792331967.8030205,
-    "seen": 1792332086.870742,
-    "ast_hash": "bc310ff1eb9404fdf39b8130641cc6d8",
+    "mtime": 1792601377.0675035,
+    "seen": 1792923033.5231886,
+    "ast_hash": "7814e5e93ae411743aec9e2ffb973775",
     "semantic_hash": ""
   },
   "frontend/components/sidebar.py": {
-    "mtime": 1792331987.7616613,
-    "seen": 1792332086.870742,
-    "ast_hash": "85e9722700e7b13e2a669a37b4fc951a",
+    "mtime": 1792601273.7491393,
+    "seen": 1792923033.5231886,
+    "ast_hash": "0b42ea65395fb5200745c95bbde96961",
     "semantic_hash": ""
   },
   "tests/test_frontend.py": {
@@ -243,6 +243,60 @@
     "mtime": 1792332958.9401765,
     "seen": 1792333077.049685,
     "ast_hash": "689a23dfd46aee1bfd936cd897e1c28b",
+    "semantic_hash": ""
+  },
+  "railway.json": {
+    "mtime": 1792521571.4164972,
+    "seen": 1792923033.5231886,
+    "ast_hash": "23a776b88720b068d34241f7cd76af61",
+    "semantic_hash": ""
+  },
+  "vercel.json": {
+    "mtime": 1792603651.7027097,
+    "seen": 1792923033.5231886,
+    "ast_hash": "6349c5b7aa7be0d7f7e79dfa05fdfdef",
+    "semantic_hash": ""
+  },
+  "docs/deployment-plan.md": {
+    "mtime": 1792524746.6581042,
+    "seen": 1792923033.5231886,
+    "ast_hash": "7861df231531b0cfe955bb1bafab322a",
+    "semantic_hash": ""
+  },
+  "frontend/web/index.html": {
+    "mtime": 1792922568.7216325,
+    "seen": 1792923033.5231886,
+    "ast_hash": "6c8dc1063d22b2b8de20821b22332fa5",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1792922718.887115,
+    "seen": 1792923033.5231886,
+    "ast_hash": "38dbd247b1cbbcc326355214b44b6601",
+    "semantic_hash": ""
+  },
+  "render.yaml": {
+    "mtime": 1792524629.685834,
+    "seen": 1792923033.5231886,
+    "ast_hash": "236c72160bf416cabbb564c430397a20",
+    "semantic_hash": ""
+  },
+  "stitch_zomato_ai_culinary_concierge/code.html": {
+    "mtime": 1792922965.3651414,
+    "seen": 1792923033.5231886,
+    "ast_hash": "ac20c28e81892f1f628a47fad8cb2307",
+    "semantic_hash": ""
+  },
+  "stitch_zomato_ai_culinary_concierge/index.html": {
+    "mtime": 1792922965.3635294,
+    "seen": 1792923033.5231886,
+    "ast_hash": "ac20c28e81892f1f628a47fad8cb2307",
+    "semantic_hash": ""
+  },
+  "stitch_zomato_ai_culinary_concierge/screen.png": {
+    "mtime": 1792338329.789643,
+    "seen": 1792923033.5231886,
+    "ast_hash": "8c6d5d6ddb15c8b888b915216a1c2e6a",
     "semantic_hash": ""
   }
 }
