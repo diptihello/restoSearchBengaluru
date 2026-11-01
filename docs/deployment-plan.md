@@ -190,7 +190,7 @@ In the Railway dashboard, navigate to your service's **"Variables"** tab and add
 
 ### Approach A: Deploying the Modern Web Client (`stitch_zomato_ai_culinary_concierge`) [Recommended for Vercel]
 
-The repository includes a modern, responsive web application (`stitch_zomato_ai_culinary_concierge/code.html`).
+The repository includes a modern, responsive web application (`stitch_zomato_ai_culinary_concierge/index.html`).
 
 #### Step 3.1: Prepare Vercel Static Directory
 1. Ensure the frontend folder contains an `index.html` referencing your Render API URL:
@@ -205,7 +205,7 @@ The repository includes a modern, responsive web application (`stitch_zomato_ai_
      "version": 2,
      "cleanUrls": true,
      "routes": [
-       { "src": "/(.*)", "dest": "/stitch_zomato_ai_culinary_concierge/code.html" }
+       { "src": "/(.*)", "dest": "/index.html" }
      ]
    }
    ```
