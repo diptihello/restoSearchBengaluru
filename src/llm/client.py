@@ -455,8 +455,17 @@ class GroqLLMClient:
         }
 
         try:
+            active_model = self.model
             with httpx.Client(timeout=30.0) as client:
                 res = client.post(self.API_URL, headers=headers, json=payload)
+                if res.status_code == 404 and ("model_not_found" in res.text or "does not exist" in res.text):
+                    logger.warning(
+                        "Model '%s' not accessible on this Groq account. Retrying with 'qwen/qwen3.8-27b'...",
+                        self.model,
+                    )
+                    active_model = "qwen/qwen3.8-27b"
+                    payload["model"] = active_model
+                    res = client.post(self.API_URL, headers=headers, json=payload)
 
             if res.status_code != 200:
                 raise ValueError(f"Groq API returned HTTP {res.status_code}: {res.text}")
@@ -493,7 +502,7 @@ class GroqLLMClient:
                         rec.rank = i
                     parsed_response.recommendations = valid_recs
                     parsed_response.provider = "groq"
-                    parsed_response.model = self.model
+                    parsed_response.model = active_model
                     return parsed_response
                 else:
                     return generate_fallback_recommendations(
@@ -510,13 +519,15 @@ class GroqLLMClient:
                 )
 
             parsed_response.provider = "groq"
-            parsed_response.model = self.model
+            parsed_response.model = active_model
             return parsed_response
 
         except Exception as e:
             logger.error("Error executing Groq recommendation generation: %s", e, exc_info=True)
             err_str = str(e)
-            if "429" in err_str or "rate_limit_exceeded" in err_str:
+            if "404" in err_str or "model_not_found" in err_str:
+                clean_reason = f"Configured model '{self.model}' is not accessible on your Groq account. Showing top-rated dining spots."
+            elif "429" in err_str or "rate_limit_exceeded" in err_str:
                 clean_reason = "Groq rate limit reached. Displaying top-rated dining spots using deterministic ranking."
             elif "401" in err_str or "invalid_api_key" in err_str:
                 clean_reason = "Invalid Groq API key configured. Displaying top-rated dining spots using deterministic ranking."

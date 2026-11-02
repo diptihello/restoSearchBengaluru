@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # LLM Settings
     LLM_PROVIDER: str = "auto"  # "auto", "groq", or "gemini"
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "qwen/qwen3.8-27b"
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-flash"
     MAX_CANDIDATES_FOR_LLM: int = 5
