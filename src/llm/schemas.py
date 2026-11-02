@@ -48,3 +48,5 @@ class RecommendationResponse(BaseModel):
     llm_time_ms: Optional[float] = Field(None, description="Stage 2 Gemini LLM reasoning latency in milliseconds")
     total_time_ms: Optional[float] = Field(None, description="Total end-to-end pipeline latency in milliseconds")
     candidate_count: Optional[int] = Field(None, description="Number of candidates passed to Stage 2")
+    provider: Optional[str] = Field(None, description="Active LLM provider used (e.g., groq, gemini, or heuristic)")
+    model: Optional[str] = Field(None, description="Active model name")

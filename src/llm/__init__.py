@@ -2,6 +2,8 @@
 
 from src.llm.client import (
     GeminiLLMClient,
+    GroqLLMClient,
+    get_llm_client,
     generate_fallback_recommendations,
     validate_recommendation_grounding,
 )
@@ -19,6 +21,8 @@ from src.llm.schemas import (
 
 __all__ = [
     "GeminiLLMClient",
+    "GroqLLMClient",
+    "get_llm_client",
     "generate_fallback_recommendations",
     "validate_recommendation_grounding",
     "SYSTEM_INSTRUCTION",

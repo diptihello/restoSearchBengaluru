@@ -11,7 +11,7 @@ from src.services.recommendation_service import get_recommendation_service
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_API_URL = os.getenv("API_BASE_URL", f"http://localhost:{settings.API_PORT}").rstrip("/")
+DEFAULT_API_URL = os.getenv("API_BASE_URL", getattr(settings, "BACKEND_URL", f"http://localhost:{settings.API_PORT}")).rstrip("/")
 
 
 def fetch_meta_options(api_base_url: str = DEFAULT_API_URL) -> Dict[str, Any]:

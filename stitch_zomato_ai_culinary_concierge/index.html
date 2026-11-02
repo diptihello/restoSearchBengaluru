@@ -1023,7 +1023,11 @@
         if (statStage2) statStage2.textContent = s2ms;
         if (statLatency) statLatency.textContent = totalPipeline;
         if (statCandidates) statCandidates.textContent = data.candidate_count != null ? data.candidate_count + " venues" : "–";
-        if (statEngine) statEngine.textContent = data.is_fallback ? "Heuristic Ranker" : "Gemini Flash";
+        let engineLabel = data.is_fallback ? "Heuristic Ranker" : (data.provider === "groq" ? "Groq " + (data.model || "Llama 3.3") : "Gemini " + (data.model || "Flash"));
+        if (statEngine) statEngine.textContent = engineLabel;
+        if (curatedBadgeText) {
+          curatedBadgeText.textContent = data.is_fallback ? "⚡ DETERMINISTIC RANKING" : (data.provider === "groq" ? "⚡ GROQ AI REASONED" : "✨ GEMINI AI REASONED");
+        }
 
         if (resultsContainer) {
           resultsContainer.innerHTML = "";

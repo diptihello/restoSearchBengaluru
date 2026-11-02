@@ -34,8 +34,11 @@ class HealthResponse(BaseModel):
     status: str
     dataset_loaded: bool
     total_restaurants: int
-    gemini_model: str
-    gemini_configured: bool
+    gemini_model: str = ""
+    gemini_configured: bool = False
+    llm_provider: Optional[str] = "gemini"
+    llm_model: Optional[str] = ""
+    llm_configured: Optional[bool] = False
     environment: str
 
 

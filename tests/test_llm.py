@@ -7,6 +7,8 @@ import pytest
 
 from src.llm.client import (
     GeminiLLMClient,
+    GroqLLMClient,
+    get_llm_client,
     _normalize_name,
     generate_fallback_recommendations,
     validate_recommendation_grounding,
@@ -427,4 +429,66 @@ class TestGeminiLLMClient:
 
         assert result.is_fallback is True
         assert len(result.recommendations) > 0
-        assert "API quota exceeded" in result.executive_summary
+        assert "temporarily unavailable" in result.executive_summary.lower()
+
+
+class TestGroqLLMClient:
+    """Tests for GroqLLMClient initialization, execution, and error resilience."""
+
+    def test_client_defaults_to_fallback_without_api_key(
+        self,
+        sample_user_preferences: UserPreferences,
+        sample_candidates: list[CandidateRestaurant],
+    ):
+        client = GroqLLMClient(api_key="")
+        response = client.generate_recommendations(sample_user_preferences, sample_candidates)
+
+        assert response.is_fallback is True
+        assert len(response.recommendations) > 0
+        assert "not configured" in response.executive_summary.lower()
+
+    @patch("src.llm.client.httpx.Client")
+    def test_successful_groq_generation(
+        self,
+        mock_httpx_cls,
+        sample_user_preferences: UserPreferences,
+        sample_candidates: list[CandidateRestaurant],
+    ):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps({
+                            "recommendations": [
+                                {
+                                    "rank": 1,
+                                    "restaurant_name": "Toscano",
+                                    "cuisine": "Italian, Continental",
+                                    "rating": 4.4,
+                                    "cost_for_two": 1400,
+                                    "location": "Indiranagar",
+                                    "why_recommended": "Fast reasoning from Groq for romantic dinner.",
+                                    "highlights": ["Handmade Pasta", "Fine Wine"],
+                                }
+                            ],
+                            "executive_summary": "Top spot picked via Groq.",
+                            "is_fallback": False,
+                        })
+                    }
+                }
+            ]
+        }
+        mock_client = MagicMock()
+        mock_client.post.return_value = mock_response
+        mock_httpx_cls.return_value.__enter__.return_value = mock_client
+
+        client = GroqLLMClient(api_key="gsk_dummy_key")
+        result = client.generate_recommendations(sample_user_preferences, sample_candidates)
+
+        assert result.is_fallback is False
+        assert result.provider == "groq"
+        assert len(result.recommendations) == 1
+        assert result.recommendations[0].restaurant_name == "Toscano"
+

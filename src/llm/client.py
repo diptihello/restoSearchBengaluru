@@ -5,6 +5,7 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
+import httpx
 import pandas as pd
 from google.genai import Client, types
 
@@ -210,6 +211,8 @@ def generate_fallback_recommendations(
         recommendations=recommendations,
         executive_summary=exec_summary,
         is_fallback=True,
+        provider="heuristic",
+        model="deterministic-ranker",
     )
 
 
@@ -342,6 +345,8 @@ class GeminiLLMClient:
                     reason="LLM returned no matches. Showing top-rated candidates.",
                 )
 
+            parsed_response.provider = "gemini"
+            parsed_response.model = self.model
             return parsed_response
 
         except Exception as e:
@@ -361,3 +366,189 @@ class GeminiLLMClient:
                 candidates,
                 reason=clean_reason,
             )
+
+
+class GroqLLMClient:
+    """
+    Groq Cloud LLM client providing ultra-low latency inference (Llama 3.3 / 3.1)
+    with structured JSON mode, grounding validation, and graceful fallback.
+    """
+    API_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+    ):
+        self.api_key = api_key if api_key is not None else settings.GROQ_API_KEY
+        self.model = model if model is not None else settings.GROQ_MODEL
+        self.temperature = temperature if temperature is not None else settings.LLM_TEMPERATURE
+        self.is_configured = bool(self.api_key and self.api_key.strip())
+
+        if self.is_configured:
+            logger.info("Initialized Groq Client with model '%s'", self.model)
+        else:
+            logger.info("No Groq API key supplied; client will default to heuristic fallback.")
+
+    def generate_recommendations(
+        self,
+        preferences: UserPreferences,
+        candidates: Union[List[Dict[str, Any]], List[CandidateRestaurant], pd.DataFrame],
+    ) -> RecommendationResponse:
+        """
+        Generate structured restaurant recommendations via Groq API with anti-hallucination guardrails.
+        Falls back seamlessly to deterministic ranking if Groq is unavailable or fails.
+        """
+        candidate_dicts = _normalize_candidates_to_dicts(candidates)
+        if not candidate_dicts:
+            return generate_fallback_recommendations(
+                preferences,
+                candidates,
+                reason="No candidate restaurants available in the filtered pool.",
+            )
+
+        if not self.is_configured:
+            logger.info("Groq API key not configured. Activating deterministic fallback.")
+            return generate_fallback_recommendations(
+                preferences,
+                candidates,
+                reason="Groq API key is not configured.",
+            )
+
+        candidate_context = serialize_candidates(candidates)
+        prompt = build_recommendation_prompt(preferences, candidate_context)
+
+        system_prompt = (
+            f"{SYSTEM_INSTRUCTION}\n\n"
+            "CRITICAL: Output must be ONLY valid JSON matching this schema:\n"
+            "{\n"
+            '  "recommendations": [\n'
+            "    {\n"
+            '      "rank": 1,\n'
+            '      "restaurant_name": "Exact Name From Candidates",\n'
+            '      "cuisine": "Cuisine",\n'
+            '      "rating": 4.5,\n'
+            '      "cost_for_two": 1200,\n'
+            '      "location": "Locality",\n'
+            '      "why_recommended": "Reasoning explaining why this matches preferences",\n'
+            '      "highlights": ["Notable Tag 1", "Notable Tag 2"]\n'
+            "    }\n"
+            "  ],\n"
+            '  "executive_summary": "Comparative summary",\n'
+            '  "is_fallback": false\n'
+            "}"
+        )
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": self.temperature,
+            "response_format": {"type": "json_object"},
+        }
+
+        try:
+            with httpx.Client(timeout=30.0) as client:
+                res = client.post(self.API_URL, headers=headers, json=payload)
+
+            if res.status_code != 200:
+                raise ValueError(f"Groq API returned HTTP {res.status_code}: {res.text}")
+
+            res_json = res.json()
+            raw_text = res_json["choices"][0]["message"]["content"]
+            if not raw_text or not raw_text.strip():
+                raise ValueError("Received empty content from Groq API.")
+
+            cleaned_text = raw_text.strip()
+            if cleaned_text.startswith("```"):
+                cleaned_text = re.sub(r"^```(?:json)?\n?", "", cleaned_text)
+                cleaned_text = re.sub(r"\n?```$", "", cleaned_text)
+
+            parsed_response = RecommendationResponse.model_validate_json(cleaned_text)
+
+            # Anti-hallucination grounding verification
+            is_grounded, hallucinated_names = validate_recommendation_grounding(
+                parsed_response, candidates
+            )
+
+            if not is_grounded:
+                logger.warning(
+                    "Anti-hallucination check detected ungrounded restaurant names from Groq: %s",
+                    hallucinated_names,
+                )
+                valid_recs = [
+                    rec
+                    for rec in parsed_response.recommendations
+                    if rec.restaurant_name not in hallucinated_names
+                ]
+                if valid_recs:
+                    for i, rec in enumerate(valid_recs, start=1):
+                        rec.rank = i
+                    parsed_response.recommendations = valid_recs
+                    parsed_response.provider = "groq"
+                    parsed_response.model = self.model
+                    return parsed_response
+                else:
+                    return generate_fallback_recommendations(
+                        preferences,
+                        candidates,
+                        reason="Groq generated unknown restaurants outside candidate pool.",
+                    )
+
+            if not parsed_response.recommendations and candidate_dicts:
+                return generate_fallback_recommendations(
+                    preferences,
+                    candidates,
+                    reason="Groq returned no matches. Showing top-rated candidates.",
+                )
+
+            parsed_response.provider = "groq"
+            parsed_response.model = self.model
+            return parsed_response
+
+        except Exception as e:
+            logger.error("Error executing Groq recommendation generation: %s", e, exc_info=True)
+            err_str = str(e)
+            if "429" in err_str or "rate_limit_exceeded" in err_str:
+                clean_reason = "Groq rate limit reached. Displaying top-rated dining spots using deterministic ranking."
+            elif "401" in err_str or "invalid_api_key" in err_str:
+                clean_reason = "Invalid Groq API key configured. Displaying top-rated dining spots using deterministic ranking."
+            else:
+                clean_reason = "AI synthesis unavailable. Displaying top-rated dining spots using deterministic ranking."
+
+            return generate_fallback_recommendations(
+                preferences,
+                candidates,
+                reason=clean_reason,
+            )
+
+
+def get_llm_client() -> Union[GroqLLMClient, GeminiLLMClient]:
+    """
+    Factory resolving active LLM client based on configuration.
+    Priority:
+    1. If LLM_PROVIDER == 'groq', use GroqLLMClient.
+    2. If LLM_PROVIDER == 'gemini', use GeminiLLMClient.
+    3. If LLM_PROVIDER == 'auto':
+       - If GROQ_API_KEY is configured -> GroqLLMClient (active Groq key)
+       - Else if GEMINI_API_KEY is configured -> GeminiLLMClient
+       - Else -> GroqLLMClient (triggers graceful fallback)
+    """
+    provider = (settings.LLM_PROVIDER or "auto").strip().lower()
+    if provider == "groq":
+        return GroqLLMClient()
+    elif provider == "gemini":
+        return GeminiLLMClient()
+    else:  # auto
+        if settings.GROQ_API_KEY and settings.GROQ_API_KEY.strip():
+            return GroqLLMClient()
+        elif settings.GEMINI_API_KEY and settings.GEMINI_API_KEY.strip():
+            return GeminiLLMClient()
+        return GroqLLMClient()

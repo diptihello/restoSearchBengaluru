@@ -9,6 +9,10 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.4
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
@@ -17,5 +21,7 @@ services:
         value: "5"
       - key: APP_ENV
         value: production
+      - key: BACKEND_URL
+        value: https://restosearchbengaluru.onrender.com
       - key: DEBUG
         value: "False"

@@ -3,13 +3,13 @@
 from functools import lru_cache
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
 from src.config import settings
 from src.data_ingestion.loader import get_processed_dataset
-from src.llm.client import GeminiLLMClient
+from src.llm.client import GeminiLLMClient, GroqLLMClient, get_llm_client
 from src.llm.schemas import (
     CandidateRestaurant,
     RecommendationResponse,
@@ -31,7 +31,7 @@ class RecommendationService:
         self,
         filter_engine: Optional[FilterEngine] = None,
         candidate_selector: Optional[CandidateSelector] = None,
-        llm_client: Optional[GeminiLLMClient] = None,
+        llm_client: Optional[Union[GeminiLLMClient, GroqLLMClient]] = None,
     ):
         self._filter_engine = filter_engine
         self._candidate_selector = candidate_selector
@@ -51,9 +51,9 @@ class RecommendationService:
         return self._candidate_selector
 
     @property
-    def llm_client(self) -> GeminiLLMClient:
+    def llm_client(self) -> Union[GeminiLLMClient, GroqLLMClient]:
         if self._llm_client is None:
-            self._llm_client = GeminiLLMClient()
+            self._llm_client = get_llm_client()
         return self._llm_client
 
     def get_recommendations(
@@ -215,14 +215,21 @@ class RecommendationService:
             dataset_loaded = False
             total_records = 0
 
-        has_api_key = bool(settings.GEMINI_API_KEY and settings.GEMINI_API_KEY.strip())
+        active_client = self.llm_client
+        is_groq = isinstance(active_client, GroqLLMClient)
+        provider = "groq" if is_groq else "gemini"
+        active_model = settings.GROQ_MODEL if is_groq else settings.GEMINI_MODEL
+        is_configured = bool(active_client.api_key and active_client.api_key.strip())
 
         return {
             "status": "healthy" if dataset_loaded else "degraded",
             "dataset_loaded": dataset_loaded,
             "total_restaurants": total_records,
             "gemini_model": settings.GEMINI_MODEL,
-            "gemini_configured": has_api_key,
+            "gemini_configured": bool(settings.GEMINI_API_KEY and settings.GEMINI_API_KEY.strip()),
+            "llm_provider": provider,
+            "llm_model": active_model,
+            "llm_configured": is_configured,
             "environment": settings.APP_ENV,
         }
 
