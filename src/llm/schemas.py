@@ -43,3 +43,8 @@ class RecommendationResponse(BaseModel):
     recommendations: List[RestaurantRecommendation] = Field(default_factory=list, description="Ranked list of top recommendations (typically 3 to 5)")
     executive_summary: str = Field(..., description="Concise summary highlighting why these venues were selected and comparing them")
     is_fallback: bool = Field(False, description="Flag indicating if heuristic fallback was used instead of LLM")
+    # Timing telemetry (populated by RecommendationService)
+    retrieval_time_ms: Optional[float] = Field(None, description="Stage 1 deterministic retrieval latency in milliseconds")
+    llm_time_ms: Optional[float] = Field(None, description="Stage 2 Gemini LLM reasoning latency in milliseconds")
+    total_time_ms: Optional[float] = Field(None, description="Total end-to-end pipeline latency in milliseconds")
+    candidate_count: Optional[int] = Field(None, description="Number of candidates passed to Stage 2")

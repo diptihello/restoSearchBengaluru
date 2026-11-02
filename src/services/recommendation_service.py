@@ -91,10 +91,12 @@ class RecommendationService:
 
         # Stage 2: Convert to typed models and invoke LLM reasoning
         candidate_models = to_candidate_models(candidates_df)
+        stage2_start = time.perf_counter()
         response = self.llm_client.generate_recommendations(
             preferences=preferences,
             candidates=candidate_models,
         )
+        stage2_time = (time.perf_counter() - stage2_start) * 1000
 
         total_time = (time.perf_counter() - start_time) * 1000
         logger.info(
@@ -103,6 +105,12 @@ class RecommendationService:
             len(response.recommendations),
             response.is_fallback,
         )
+
+        # Attach timing telemetry to the response
+        response.retrieval_time_ms = round(stage1_time, 2)
+        response.llm_time_ms = round(stage2_time, 2)
+        response.total_time_ms = round(total_time, 2)
+        response.candidate_count = len(candidate_models)
 
         # If constraint relaxation occurred, mention it transparently in the executive summary
         if was_relaxed and relaxation_steps and not response.is_fallback:

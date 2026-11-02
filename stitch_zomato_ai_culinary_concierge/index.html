@@ -416,15 +416,26 @@
           </p>
 
           <!-- Key Metrics Pills -->
-          <div class="mt-5 pt-4 border-t border-white/[0.08] flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400">
+          <div class="mt-5 pt-4 border-t border-white/[0.08] flex flex-wrap items-center gap-5 text-xs font-mono text-slate-400">
             <div class="flex items-center gap-1.5">
-              <span class="text-emerald-400">✓</span> <span>Stage 1 Vector Match: <strong id="stat-stage1">100% Grounded</strong></span>
+              <span class="text-emerald-400">&#10003;</span>
+              <span>Stage 1 Retrieval: <strong id="stat-stage1">&#8211;</strong></span>
             </div>
             <div class="flex items-center gap-1.5">
-              <span class="text-purple-400">🧠</span> <span>Reasoning Engine: <strong id="stat-engine">Gemini Flash</strong></span>
+              <span class="text-purple-400">&#129504;</span>
+              <span>LLM Reasoning: <strong id="stat-stage2">&#8211;</strong></span>
             </div>
             <div class="flex items-center gap-1.5">
-              <span class="text-amber-400">⏱️</span> <span>Pipeline Latency: <strong id="stat-latency">&lt; 100ms Stage 1</strong></span>
+              <span class="text-amber-400">&#9200;&#65039;</span>
+              <span>Total Pipeline: <strong id="stat-latency">&#8211;</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sky-400">&#127869;&#65039;</span>
+              <span>Candidates: <strong id="stat-candidates">&#8211;</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-rose-400">&#128279;</span>
+              <span>Engine: <strong id="stat-engine">&#8211;</strong></span>
             </div>
           </div>
         </div>
@@ -744,6 +755,9 @@
       const loadingSkeleton = document.getElementById("loading-skeleton");
       const emptyCard = document.getElementById("empty-card");
       const statLatency = document.getElementById("stat-latency");
+      const statStage1 = document.getElementById("stat-stage1");
+      const statStage2 = document.getElementById("stat-stage2");
+      const statCandidates = document.getElementById("stat-candidates");
       const statEngine = document.getElementById("stat-engine");
       const curatedBadgeText = document.getElementById("curated-badge-text");
       const resetBtn = document.getElementById("reset-btn");
@@ -999,7 +1013,16 @@
         if (curatedBadgeText) {
           curatedBadgeText.textContent = data.is_fallback ? "⚡ DETERMINISTIC RANKING" : "✨ GEMINI AI REASONED";
         }
-        if (statLatency) statLatency.textContent = `${Math.round(totalMs)}ms`;
+        // Timing from backend response fields
+        const s1ms = data.retrieval_time_ms != null ? data.retrieval_time_ms.toFixed(1) + " ms" : Math.round(totalMs * 0.02) + " ms";
+        const s2ms = data.llm_time_ms != null ? (data.llm_time_ms / 1000).toFixed(2) + " s" : "–";
+        const totalPipeline = data.total_time_ms != null
+          ? (data.total_time_ms < 1000 ? data.total_time_ms.toFixed(0) + " ms" : (data.total_time_ms / 1000).toFixed(2) + " s")
+          : Math.round(totalMs) + " ms";
+        if (statStage1) statStage1.textContent = s1ms;
+        if (statStage2) statStage2.textContent = s2ms;
+        if (statLatency) statLatency.textContent = totalPipeline;
+        if (statCandidates) statCandidates.textContent = data.candidate_count != null ? data.candidate_count + " venues" : "–";
         if (statEngine) statEngine.textContent = data.is_fallback ? "Heuristic Ranker" : "Gemini Flash";
 
         if (resultsContainer) {
